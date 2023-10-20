@@ -1,3 +1,6 @@
 spring:
   application:
     name: mtg-scrapper
+
+cardmarket:
+  url: https://www.cardmarket.com/en/Magic/

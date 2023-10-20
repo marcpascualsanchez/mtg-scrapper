@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 
 @CucumberContextConfiguration
-@SpringBootTest(classes = [MtgScrapperApplication::class])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = [MtgScrapperApplication::class])
 @ActiveProfiles("test")
 @ContextConfiguration()
 abstract class BaseApplication
