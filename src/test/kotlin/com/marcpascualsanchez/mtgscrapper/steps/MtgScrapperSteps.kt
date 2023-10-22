@@ -1,20 +1,26 @@
 package com.marcpascualsanchez.mtgscrapper.steps
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.marcpascualsanchez.mtgscrapper.BaseApplication
-import com.marcpascualsanchez.mtgscrapper.domain.entity.CardEvaluation
-import org.springframework.http.HttpMethod
+import com.marcpascualsanchez.mtgscrapper.api.response.CardListEvaluationResponse
+import io.cucumber.datatable.DataTable
+import io.cucumber.java.Before
 import io.cucumber.java.en.Given
+import io.cucumber.java.en.When
 import io.cucumber.spring.CucumberContextConfiguration
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.http.*
 import java.util.*
 
 @CucumberContextConfiguration
-class MtgScrapperSteps(val jacksonMapper: ObjectMapper) : BaseApplication() {
+class MtgScrapperSteps(
+    private val jacksonMapper: ObjectMapper,
+    private val wireMockServer: WireMockServer,
+) : BaseApplication() {
 
     @LocalServerPort
     private var port = 0
@@ -22,11 +28,30 @@ class MtgScrapperSteps(val jacksonMapper: ObjectMapper) : BaseApplication() {
     val baseUrl: String
         get() = "http://localhost:$port"
 
-    @Given("a POST is received with body {string}")
+    @Before
+    fun before() {
+        wireMockServer.resetAll()
+    }
+
+    @Given("cardmarket website responses are")
+    fun `cardmarket website responses are`(dataTable: DataTable) {
+        dataTable.asMaps().forEach {
+            wireMockServer.stubFor(
+                WireMock.get(WireMock.urlEqualTo(getCardmarketPath(it["seller"]!!, it["cardName"]!!)))
+                    .willReturn(
+                        ResponseDefinitionBuilder.responseDefinition()
+                            .withStatus(HttpStatus.OK.value())
+                            .withBody(parseFileToString("response/cardmarket/${it["response"]!!}"))
+                    )
+            )
+        }
+    }
+
+    @When("a POST is received with body {string}")
     fun `a POST is received with body`(fileName: String) {
-        baseCall<CardEvaluation>(
-            HttpEntity(parseFileToString(fileName), getDefaultHeaders()),
-            "$baseUrl/evaluate",
+        baseCall<CardListEvaluationResponse>(
+            HttpEntity(parseFileToString("response/$fileName"), getDefaultHeaders()),
+            "$baseUrl/api/v1/cards-list/evaluate",
             HttpMethod.POST
         )
     }
@@ -51,4 +76,6 @@ class MtgScrapperSteps(val jacksonMapper: ObjectMapper) : BaseApplication() {
             javaClass.getResourceAsStream("/data/$path")
         ).readAllBytes()
     )
+
+    private fun getCardmarketPath(seller: String, cardName: String) = "/en/Magic/$seller/Offers/Singles?name=$cardName"
 }

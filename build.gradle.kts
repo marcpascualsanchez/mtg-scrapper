@@ -16,7 +16,7 @@ version = "0.0.1-SNAPSHOT"
 
 object Versions {
 	const val cucumber = "7.8.1"
-	const val wiremock = "2.27.2"
+	const val wiremock = "3.0.1"
 	const val junit = "5.4.0"
 }
 
