@@ -3,4 +3,4 @@ spring:
     name: mtg-scrapper
 
 cardmarket:
-  url: https://www.cardmarket.com/en/Magic/
+  url: https://www.cardmarket.com/en/Magic

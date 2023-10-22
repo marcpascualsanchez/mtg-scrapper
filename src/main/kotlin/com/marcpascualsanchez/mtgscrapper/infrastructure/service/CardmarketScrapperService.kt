@@ -9,19 +9,42 @@ class CardmarketScrapperService(
     private val cardmarketClient: CardmarketClient
 ) {
     fun getCardBySeller(seller: String, cardName: String): CardAtSale {
-        return CardAtSale(
+        val foundCard = cardmarketClient.getCardFromSellerPage(seller, cardName) ?: return CardNotFound
+        return CardFound(
             seller,
-            scrapCheaperCard(cardmarketClient.getCardFromSellerPage(seller, cardName)),
+            scrapCheaperCard(foundCard),
         )
     }
 
     private fun scrapCheaperCard(htmlPage: Document): Double {
-        return 0.99 // TODO: play with cardmarket html in web devtools to get the CSS query selector
+        return htmlPage
+            .body()
+            .select(PRICE_CSS_SELECTOR)
+            .minOf { parsePrice(it.text()) }
+    }
+
+    private fun parsePrice(htmlText: String): Double {
+        try {
+            return htmlText
+                .replace("€", "")
+                .replace(',', '.')
+                .toDouble()
+        } catch (e: Exception) {
+            println("parse of html price failed for $htmlText")
+            throw e // TODO: custom exception
+        }
+    }
+
+    companion object {
+        const val PRICE_CSS_SELECTOR = ".table-body > * .price-container"
     }
 }
 
-data class CardAtSale(
+sealed class CardAtSale
+data class CardFound(
     val seller: String,
     val price: Double,
     //val amount: Int
-)
+): CardAtSale()
+
+object CardNotFound: CardAtSale()

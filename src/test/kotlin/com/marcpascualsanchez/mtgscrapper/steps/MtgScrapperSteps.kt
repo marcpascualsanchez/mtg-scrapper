@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.marcpascualsanchez.mtgscrapper.BaseApplication
-import com.marcpascualsanchez.mtgscrapper.api.response.CardListEvaluationResponse
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
@@ -14,6 +13,7 @@ import io.cucumber.spring.CucumberContextConfiguration
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.*
+import java.net.URLEncoder
 import java.util.*
 
 @CucumberContextConfiguration
@@ -37,7 +37,8 @@ class MtgScrapperSteps(
     fun `cardmarket website responses are`(dataTable: DataTable) {
         dataTable.asMaps().forEach {
             wireMockServer.stubFor(
-                WireMock.get(WireMock.urlEqualTo(getCardmarketPath(it["seller"]!!, it["cardName"]!!)))
+                WireMock
+                    .get(WireMock.urlEqualTo(getCardmarketPath(it["seller"]!!, it["cardName"]!!)))
                     .willReturn(
                         ResponseDefinitionBuilder.responseDefinition()
                             .withStatus(HttpStatus.OK.value())
@@ -49,12 +50,13 @@ class MtgScrapperSteps(
 
     @When("a POST is received with body {string}")
     fun `a POST is received with body`(fileName: String) {
-        baseCall<CardListEvaluationResponse>(
+        baseCall<Any>(
             HttpEntity(parseFileToString("response/$fileName"), getDefaultHeaders()),
             "$baseUrl/api/v1/cards-list/evaluate",
             HttpMethod.POST
         )
     }
+
 
     private inline fun <reified T> baseCall(
         entity: HttpEntity<*>?,
@@ -77,5 +79,6 @@ class MtgScrapperSteps(
         ).readAllBytes()
     )
 
-    private fun getCardmarketPath(seller: String, cardName: String) = "/en/Magic/$seller/Offers/Singles?name=$cardName"
+    private fun getCardmarketPath(seller: String, cardName: String) =
+        "/Users/$seller/Offers/Singles?name=${URLEncoder.encode(cardName, "UTF-8")}"
 }

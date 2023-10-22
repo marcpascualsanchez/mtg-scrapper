@@ -1,0 +1,2 @@
+cardmarket:
+  url: http://localhost:${wiremock.port}
