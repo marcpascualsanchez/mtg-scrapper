@@ -4,3 +4,5 @@ spring:
 
 cardmarket:
   url: https://www.cardmarket.com/en/Magic
+  max_sleep_ms: 2000
+  min_sleep_ms: 4000

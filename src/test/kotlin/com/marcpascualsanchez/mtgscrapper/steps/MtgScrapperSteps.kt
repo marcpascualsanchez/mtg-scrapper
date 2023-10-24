@@ -11,6 +11,7 @@ import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import io.cucumber.spring.CucumberContextConfiguration
+import org.assertj.core.api.Assertions.assertThat
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.*
@@ -28,6 +29,7 @@ class MtgScrapperSteps(
     private val testRestTemplate = TestRestTemplate()
     val baseUrl: String
         get() = "http://localhost:$port"
+    private var currentResponse = ""
 
     @Before
     fun before() {
@@ -51,7 +53,7 @@ class MtgScrapperSteps(
 
     @When("a POST is received with body {string}")
     fun `a POST is received with body`(fileName: String) {
-        baseCall<Any>(
+        currentResponse = baseCall(
             HttpEntity(parseFileToString("response/$fileName"), getDefaultHeaders()),
             "$baseUrl/api/v1/cards-list/evaluate",
             HttpMethod.POST
@@ -60,16 +62,17 @@ class MtgScrapperSteps(
 
     @Then("the response is a csv matching {string}")
     fun `the response is a csv matching`(fileName: String) {
-
+        assertThat(currentResponse).isEqualTo(parseFileToString("expected/$fileName"))
+        // TODO: assert equal line to line?
     }
 
-    private inline fun <reified T> baseCall(
+    private fun baseCall(
         entity: HttpEntity<*>?,
         path: String,
         httpMethod: HttpMethod
-    ): T {
+    ): String {
         val response = testRestTemplate.exchange(path, httpMethod, entity, String::class.java)
-        return jacksonMapper.readValue(response.body, T::class.java)
+        return response.body!!
     }
 
     private fun getDefaultHeaders(): HttpHeaders {

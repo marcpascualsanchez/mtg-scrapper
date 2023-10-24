@@ -10,6 +10,8 @@ import java.net.URLEncoder
 @Service
 class CardmarketClient(
     @Value("\${cardmarket.url}") val url: String,
+    @Value("\${cardmarket.max_sleep_ms}") val maxSleepTime: Long,
+    @Value("\${cardmarket.min_sleep_ms}") val minSleepTime: Long,
     private val chromeDriver: ChromeDriver,
 ) {
 
@@ -18,7 +20,7 @@ class CardmarketClient(
             chromeDriver.get(
                 "$url/Users/$seller/Offers/Singles?name=${URLEncoder.encode(cardName, "UTF-8")}",
             )
-            Thread.sleep(REQUEST_SLEEP)
+            Thread.sleep(randomSleep())
             Jsoup.parse(chromeDriver.pageSource)
         } catch (e: Exception) {
             println("error finding card $cardName for seller $seller")
@@ -26,7 +28,5 @@ class CardmarketClient(
         }
     }
 
-    companion object {
-        const val REQUEST_SLEEP = (1000).toLong()
-    }
+    private fun randomSleep() = (maxSleepTime..minSleepTime).random()
 }
