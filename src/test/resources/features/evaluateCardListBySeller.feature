@@ -8,6 +8,8 @@ Feature: API POST evaluates card list by seller
       | Pendant of Prosperity | MagicBarcelona | cheapPendantOfProsperity.html       |
       | Pendant of Prosperity | inGenio        | expensivePendantOfProsperity.html   |
     When a POST is received with body "allCorrectCardsList.json"
-  # TODO:   Then the response is a csv matching "example.csv"
+    Then the response is a csv matching "example.csv"
+
+
     # could we also add the option for add-to-cart?
     # ensure card name is exactly the same (not one name containing another)

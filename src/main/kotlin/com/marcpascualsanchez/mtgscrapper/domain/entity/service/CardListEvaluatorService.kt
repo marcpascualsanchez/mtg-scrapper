@@ -1,4 +1,4 @@
-package com.marcpascualsanchez.mtgscrapper.api.service
+package com.marcpascualsanchez.mtgscrapper.domain.entity.service
 
 import com.marcpascualsanchez.mtgscrapper.domain.entity.Card
 import com.marcpascualsanchez.mtgscrapper.domain.entity.CardEvaluation
@@ -36,7 +36,6 @@ class CardListEvaluatorService(
         when (val cardFoundBySeller = cardmarketScrapperService.getCardBySeller(seller, card.name)) {
             is CardFound -> cardFoundBySeller
             is CardNotFound -> null
-            // TODO: what to do when card is not found? seal class for evaluations?
         }
     }
 }

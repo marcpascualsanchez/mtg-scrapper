@@ -8,6 +8,7 @@ import com.marcpascualsanchez.mtgscrapper.BaseApplication
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import io.cucumber.spring.CucumberContextConfiguration
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -57,6 +58,10 @@ class MtgScrapperSteps(
         )
     }
 
+    @Then("the response is a csv matching {string}")
+    fun `the response is a csv matching`(fileName: String) {
+
+    }
 
     private inline fun <reified T> baseCall(
         entity: HttpEntity<*>?,

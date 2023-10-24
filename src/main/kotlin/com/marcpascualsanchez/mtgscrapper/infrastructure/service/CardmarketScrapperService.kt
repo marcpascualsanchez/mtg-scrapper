@@ -9,12 +9,18 @@ class CardmarketScrapperService(
     private val cardmarketClient: CardmarketClient
 ) {
     fun getCardBySeller(seller: String, cardName: String): CardAtSale {
-        val foundCard = cardmarketClient.getCardFromSellerPage(seller, cardName) ?: return CardNotFound
-        return CardFound(
-            seller,
-            scrapCheaperCard(foundCard),
-        )
+        val page = cardmarketClient.getCardFromSellerPage(seller, cardName) ?: return CardNotFound
+        return if (scrapNotFoundMessage(page) != null) {
+            CardNotFound
+        } else {
+            CardFound(
+                seller,
+                scrapCheaperCard(page),
+            )
+        }
     }
+
+    private fun scrapNotFoundMessage(htmlPage: Document) = htmlPage.body().selectFirst(NO_RESULTS_CSS_SELECTOR)
 
     private fun scrapCheaperCard(htmlPage: Document): Double {
         return htmlPage
@@ -36,6 +42,7 @@ class CardmarketScrapperService(
     }
 
     companion object {
+        const val NO_RESULTS_CSS_SELECTOR = ".noResults"
         const val PRICE_CSS_SELECTOR = ".table-body > * .price-container"
     }
 }
@@ -45,6 +52,6 @@ data class CardFound(
     val seller: String,
     val price: Double,
     //val amount: Int
-): CardAtSale()
+) : CardAtSale()
 
-object CardNotFound: CardAtSale()
+object CardNotFound : CardAtSale()

@@ -1,7 +1,7 @@
 package com.marcpascualsanchez.mtgscrapper.api.controller
 
 import com.marcpascualsanchez.mtgscrapper.api.request.CardsListEvaluationRequest
-import com.marcpascualsanchez.mtgscrapper.api.service.CardListEvaluatorService
+import com.marcpascualsanchez.mtgscrapper.domain.entity.service.CardListEvaluatorService
 import com.marcpascualsanchez.mtgscrapper.domain.entity.Card
 import com.marcpascualsanchez.mtgscrapper.domain.entity.CardEvaluation
 import com.marcpascualsanchez.mtgscrapper.domain.entity.FoundCardEvaluation
@@ -43,27 +43,25 @@ class CardListController(
             }
 
     private fun mapToResponse(cardEvaluations: List<CardEvaluation>): StreamingResponseBody {
-        val csvLines = cardEvaluations.map {
-            when (it) {
-                is FoundCardEvaluation -> listOf(it.cardVersionName, it.minPrice, it.minPriceSeller)
-                is NotFoundCardEvaluation -> listOf(it.cardVersionName, DEFAULT_EMPTY_LINE, DEFAULT_EMPTY_LINE)
-            }
-        }
         return StreamingResponseBody { outputStream ->
             val csvPrinter =
-                CSVPrinter(OutputStreamWriter(outputStream), CSVFormat.DEFAULT.withHeader(HEADERS_RESPONSE_LINE))
+                CSVPrinter(OutputStreamWriter(outputStream), CSVFormat.DEFAULT.withHeader(*HEADERS_RESPONSE_LINE))
 
-            for (record in csvLines) {
-                csvPrinter.printRecord(record)
+            cardEvaluations.forEach {
+                csvPrinter.printRecord(
+                    when (it) {
+                        is FoundCardEvaluation -> listOf(it.cardVersionName, it.minPrice, it.minPriceSeller)
+                        is NotFoundCardEvaluation -> listOf(it.cardVersionName, DEFAULT_EMPTY_LINE, DEFAULT_EMPTY_LINE)
+                    }
+                )
             }
 
             csvPrinter.close()
-            // TODO: make this work with something that is not from medieval times
         }
     }
 
     companion object {
-        const val HEADERS_RESPONSE_LINE = "card name,cheapest price,seller"
+        val HEADERS_RESPONSE_LINE = listOf("card name", "cheapest price", "seller").toTypedArray()
         const val DEFAULT_EMPTY_LINE = "N/A"
     }
 
