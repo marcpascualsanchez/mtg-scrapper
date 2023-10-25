@@ -45,7 +45,12 @@ class CardListController(
     private fun mapToResponse(cardEvaluations: List<CardEvaluation>): StreamingResponseBody {
         return StreamingResponseBody { outputStream ->
             val csvPrinter =
-                CSVPrinter(OutputStreamWriter(outputStream), CSVFormat.DEFAULT.withHeader(*HEADERS_RESPONSE_LINE))
+                CSVPrinter(
+                    OutputStreamWriter(outputStream),
+                    CSVFormat.DEFAULT
+                        .withHeader(*HEADERS_RESPONSE_LINE)
+                        .withRecordSeparator("\n")
+                )
 
             cardEvaluations.forEach {
                 csvPrinter.printRecord(

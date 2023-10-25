@@ -63,7 +63,6 @@ class MtgScrapperSteps(
     @Then("the response is a csv matching {string}")
     fun `the response is a csv matching`(fileName: String) {
         assertThat(currentResponse).isEqualTo(parseFileToString("expected/$fileName"))
-        // TODO: assert equal line to line?
     }
 
     private fun baseCall(
