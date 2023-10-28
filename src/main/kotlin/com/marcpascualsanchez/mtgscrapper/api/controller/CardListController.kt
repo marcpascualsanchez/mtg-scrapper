@@ -1,11 +1,11 @@
 package com.marcpascualsanchez.mtgscrapper.api.controller
 
 import com.marcpascualsanchez.mtgscrapper.api.request.CardsListEvaluationRequest
-import com.marcpascualsanchez.mtgscrapper.domain.entity.service.CardListEvaluatorService
 import com.marcpascualsanchez.mtgscrapper.domain.entity.Card
 import com.marcpascualsanchez.mtgscrapper.domain.entity.CardEvaluation
 import com.marcpascualsanchez.mtgscrapper.domain.entity.FoundCardEvaluation
 import com.marcpascualsanchez.mtgscrapper.domain.entity.NotFoundCardEvaluation
+import com.marcpascualsanchez.mtgscrapper.domain.entity.service.CardListEvaluatorService
 import jakarta.validation.Valid
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
@@ -42,8 +42,8 @@ class CardListController(
                 Card(amount = parts[0].toIntOrNull() ?: 0, name = parts[1].trim())
             }
 
-    private fun mapToResponse(cardEvaluations: List<CardEvaluation>): StreamingResponseBody {
-        return StreamingResponseBody { outputStream ->
+    private fun mapToResponse(cardEvaluations: List<CardEvaluation>) =
+        StreamingResponseBody { outputStream ->
             val csvPrinter =
                 CSVPrinter(
                     OutputStreamWriter(outputStream),
@@ -52,21 +52,39 @@ class CardListController(
                         .withRecordSeparator("\n")
                 )
 
-            cardEvaluations.forEach {
-                csvPrinter.printRecord(
-                    when (it) {
-                        is FoundCardEvaluation -> listOf(it.cardVersionName, it.minPrice, it.minPriceSeller)
-                        is NotFoundCardEvaluation -> listOf(it.cardVersionName, DEFAULT_EMPTY_LINE, DEFAULT_EMPTY_LINE)
-                    }
-                )
-            }
+            csvPrinter.printRecord(computeGeneralData(cardEvaluations))
+            cardEvaluations.forEach { csvPrinter.printRecord(mapToRecord(it)) }
 
             csvPrinter.close()
         }
+
+    private fun computeGeneralData(cardEvaluations: List<CardEvaluation>): List<String?> {
+        val foundCards = cardEvaluations.filterIsInstance(FoundCardEvaluation::class.java)
+        return listOf(
+            null,
+            null,
+            null,
+            foundCards.size.toString(),
+            (cardEvaluations.size - foundCards.size).toString(),
+            foundCards.sumOf { it.minPrice }.toString()
+        )
+    }
+
+    private fun mapToRecord(evaluation: CardEvaluation) = when (evaluation) {
+        is FoundCardEvaluation -> listOf(evaluation.cardVersionName, evaluation.minPrice, evaluation.minPriceSeller)
+        is NotFoundCardEvaluation -> listOf(evaluation.cardVersionName, DEFAULT_EMPTY_LINE, DEFAULT_EMPTY_LINE)
     }
 
     companion object {
-        val HEADERS_RESPONSE_LINE = listOf("card name", "cheapest price", "seller").toTypedArray()
+        val HEADERS_RESPONSE_LINE =
+            listOf(
+                "card name",
+                "cheapest price",
+                "seller",
+                "found cards",
+                "not found cards",
+                "list total price"
+            ).toTypedArray()
         const val DEFAULT_EMPTY_LINE = "N/A"
     }
 

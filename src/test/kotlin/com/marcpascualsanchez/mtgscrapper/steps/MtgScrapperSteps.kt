@@ -1,6 +1,5 @@
 package com.marcpascualsanchez.mtgscrapper.steps
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock
@@ -20,7 +19,6 @@ import java.util.*
 
 @CucumberContextConfiguration
 class MtgScrapperSteps(
-    private val jacksonMapper: ObjectMapper,
     private val wireMockServer: WireMockServer,
 ) : BaseApplication() {
 
@@ -51,10 +49,10 @@ class MtgScrapperSteps(
         }
     }
 
-    @When("a POST is received with body {string}")
+    @When("a POST is requested with body {string}")
     fun `a POST is received with body`(fileName: String) {
         currentResponse = baseCall(
-            HttpEntity(parseFileToString("response/$fileName"), getDefaultHeaders()),
+            HttpEntity(parseFileToString("request/$fileName"), getDefaultHeaders()),
             "$baseUrl/api/v1/cards-list/evaluate",
             HttpMethod.POST
         )
@@ -87,5 +85,5 @@ class MtgScrapperSteps(
     )
 
     private fun getCardmarketPath(seller: String, cardName: String) =
-        "/Users/$seller/Offers/Singles?name=${URLEncoder.encode(cardName, "UTF-8")}"
+        "/Users/$seller/Offers/Singles?name=${URLEncoder.encode(cardName, "UTF-8")}&sortBy=price_asc"
 }

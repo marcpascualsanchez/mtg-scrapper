@@ -1,32 +1,28 @@
 package com.marcpascualsanchez.mtgscrapper.infrastructure.service
 
-import com.marcpascualsanchez.mtgscrapper.infrastructure.rest.CardmarketClient
+import com.marcpascualsanchez.mtgscrapper.infrastructure.rest.CardmarketWebDriver
 import org.jsoup.nodes.Document
 import org.springframework.stereotype.Service
 
 @Service
 class CardmarketScrapperService(
-    private val cardmarketClient: CardmarketClient
+    private val cardmarketWebDriver: CardmarketWebDriver
 ) {
     fun getCardBySeller(seller: String, cardName: String): CardAtSale {
-        val page = cardmarketClient.getCardFromSellerPage(seller, cardName) ?: return CardNotFound
-        return if (scrapNotFoundMessage(page) != null) {
-            CardNotFound
-        } else {
-            CardFound(
-                seller,
-                scrapCheaperCard(page),
-            )
-        }
+        val page = cardmarketWebDriver.searchCardBySeller(seller, cardName) ?: return CardNotFound
+        val price = scrapCheaperCardPrice(page) ?: return CardNotFound
+        return CardFound(
+            seller,
+            price,
+        )
+        // TODO: what if we are flagged as robots and another page appears?
     }
 
-    private fun scrapNotFoundMessage(htmlPage: Document) = htmlPage.body().selectFirst(NO_RESULTS_CSS_SELECTOR)
-
-    private fun scrapCheaperCard(htmlPage: Document): Double {
+    private fun scrapCheaperCardPrice(htmlPage: Document): Double? {
         return htmlPage
             .body()
             .select(PRICE_CSS_SELECTOR)
-            .minOf { parsePrice(it.text()) }
+            .minOfOrNull { parsePrice(it.text()) }
     }
 
     private fun parsePrice(htmlText: String): Double {
@@ -42,16 +38,6 @@ class CardmarketScrapperService(
     }
 
     companion object {
-        const val NO_RESULTS_CSS_SELECTOR = ".noResults"
-        const val PRICE_CSS_SELECTOR = ".table-body > * .price-container"
+        const val PRICE_CSS_SELECTOR = ".mtg-scrapper-valid-price"
     }
 }
-
-sealed class CardAtSale
-data class CardFound(
-    val seller: String,
-    val price: Double,
-    //val amount: Int
-) : CardAtSale()
-
-object CardNotFound : CardAtSale()
