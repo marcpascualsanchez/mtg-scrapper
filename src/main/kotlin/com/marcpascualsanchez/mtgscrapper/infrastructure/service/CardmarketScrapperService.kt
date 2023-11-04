@@ -9,7 +9,7 @@ class CardmarketScrapperService(
     private val cardmarketWebDriver: CardmarketWebDriver
 ) {
     fun getCardBySeller(seller: String, cardName: String): CardAtSale {
-        val page = cardmarketWebDriver.searchCardBySeller(seller, cardName) ?: return CardNotFound
+        val page = cardmarketWebDriver.searchAndPrepareForScrapping(seller, cardName) ?: return CardNotFound
         val cheapestCard = scrapCheaperCard(page) ?: return CardNotFound
         return CardFound(
             seller,
@@ -18,12 +18,12 @@ class CardmarketScrapperService(
         )
     }
 
-    private fun scrapCheaperCard(htmlPage: Document): HtmlCard? {
+    private fun scrapCheaperCard(htmlPage: Document): CheapestCard? {
         val cheapestPrice = htmlPage.body()
             .select(PRICE_CSS_SELECTOR)
             .minByOrNull { parsePrice(it.text()) }
         return cheapestPrice?.run {
-            HtmlCard(
+            CheapestCard(
                 cheapestPrice.attr(CARD_ID_ATTRIBUTE).toInt(),
                 parsePrice(cheapestPrice.text())
             )
@@ -53,8 +53,3 @@ class CardmarketScrapperService(
         const val AMOUNT_CSS_SELECTOR_TEMPLATE = ".mtg-scrapper-valid-amount[$CARD_ID_ATTRIBUTE=\"%s\"]"
     }
 }
-
-data class HtmlCard(
-    val id: Int,
-    val price: Double,
-)

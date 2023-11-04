@@ -53,7 +53,7 @@ class MtgScrapperSteps(
     fun `a POST is received with body`(fileName: String) {
         currentResponse = baseCall(
             HttpEntity(parseFileToString("request/$fileName"), getDefaultHeaders()),
-            "$baseUrl/api/v1/cards-list/evaluate",
+            "$baseUrl/api/v1/cards-list/best-offers",
             HttpMethod.POST
         )
     }

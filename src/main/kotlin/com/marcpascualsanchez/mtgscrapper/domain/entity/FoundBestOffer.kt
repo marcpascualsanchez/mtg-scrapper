@@ -1,18 +1,17 @@
 package com.marcpascualsanchez.mtgscrapper.domain.entity
 
-sealed class CardEvaluation(
+sealed class BestOffer(
     open val cardVersionName: String,
     open val amount: Int,
 )
-data class FoundCardEvaluation(
+data class FoundBestOffer(
     override val cardVersionName: String,
     override val amount: Int,
     val minPrice: Double,
     val minPriceSeller: String,
-    // TODO: foils
-): CardEvaluation(cardVersionName, amount)
+): BestOffer(cardVersionName, amount)
 
-data class NotFoundCardEvaluation(
+data class NotFoundOffer(
     override val cardVersionName: String,
     override val amount: Int,
-): CardEvaluation(cardVersionName, amount)
+): BestOffer(cardVersionName, amount)

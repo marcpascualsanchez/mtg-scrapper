@@ -14,9 +14,9 @@ class CardmarketWebDriver(
     @Value("\${cardmarket.min_sleep_ms}") val minSleepTime: Long,
     private val chromeDriver: ChromeDriver,
 ) {
-    val flagValidPriceScriptDeclaration = String(javaClass.getResourceAsStream(JS_SCRIPT_FILE).readAllBytes())
+    val injectScript = String(javaClass.getResourceAsStream(JS_FLAG_VALID_PRICES_FILE).readAllBytes())
 
-    fun searchCardBySeller(seller: String, cardName: String): Document? {
+    fun searchAndPrepareForScrapping(seller: String, cardName: String): Document? {
         return try {
             chromeDriver.get(buildUrl(seller, cardName))
             flagMatchingCardElements(cardName)
@@ -30,9 +30,8 @@ class CardmarketWebDriver(
     }
 
     private fun flagMatchingCardElements(cardName: String) {
-        // put it somewhere else so this injected feature is understood
-        val scriptExecution = "flagValidPrices('$cardName')"
-        chromeDriver.executeScript("$flagValidPriceScriptDeclaration $scriptExecution")
+        val scriptExecution = "flagValidPrices(`$cardName`)"
+        chromeDriver.executeScript("$injectScript $scriptExecution")
     }
 
     private fun buildUrl(seller: String, cardName: String) =
@@ -41,6 +40,6 @@ class CardmarketWebDriver(
     private fun randomSleep() = (maxSleepTime..minSleepTime).random()
 
     companion object {
-        const val JS_SCRIPT_FILE = "/js/flagValidPrices.js"
+        const val JS_FLAG_VALID_PRICES_FILE = "/js/flagValidPrices.js"
     }
 }

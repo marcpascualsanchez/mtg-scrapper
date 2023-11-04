@@ -2,10 +2,10 @@ package com.marcpascualsanchez.mtgscrapper.api.controller
 
 import com.marcpascualsanchez.mtgscrapper.api.request.CardsListEvaluationRequest
 import com.marcpascualsanchez.mtgscrapper.domain.entity.Card
-import com.marcpascualsanchez.mtgscrapper.domain.entity.CardEvaluation
-import com.marcpascualsanchez.mtgscrapper.domain.entity.FoundCardEvaluation
-import com.marcpascualsanchez.mtgscrapper.domain.entity.NotFoundCardEvaluation
-import com.marcpascualsanchez.mtgscrapper.domain.entity.service.CardListEvaluatorService
+import com.marcpascualsanchez.mtgscrapper.domain.entity.BestOffer
+import com.marcpascualsanchez.mtgscrapper.domain.entity.FoundBestOffer
+import com.marcpascualsanchez.mtgscrapper.domain.entity.NotFoundOffer
+import com.marcpascualsanchez.mtgscrapper.domain.service.CardListEvaluatorService
 import jakarta.validation.Valid
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
@@ -22,13 +22,13 @@ class CardListController(
     private val cardListEvaluator: CardListEvaluatorService
 ) {
 
-    @PostMapping("/evaluate")
+    @PostMapping("/best-offers")
     fun evaluate(
         @Valid @RequestBody request: CardsListEvaluationRequest,
     ): StreamingResponseBody {
         val requestedCards = parseCardList(request.rawList)
         return mapToResponse(
-            cardListEvaluator.evaluate(
+            cardListEvaluator.evaluateBestOffers(
                 requestedCards, request.sellers
             ),
             requestedCards
@@ -44,7 +44,7 @@ class CardListController(
                 Card(amount = parts[0].toIntOrNull() ?: 0, name = parts[1].trim())
             }
 
-    private fun mapToResponse(cardEvaluations: List<CardEvaluation>, requestedCards: List<Card>) =
+    private fun mapToResponse(bestOffers: List<BestOffer>, requestedCards: List<Card>) =
         StreamingResponseBody { outputStream ->
             val csvPrinter =
                 CSVPrinter(
@@ -54,14 +54,14 @@ class CardListController(
                         .withRecordSeparator("\n")
                 )
 
-            csvPrinter.printRecord(computeGeneralData(cardEvaluations, requestedCards))
-            cardEvaluations.forEach { csvPrinter.printRecord(mapToRecord(it)) }
+            csvPrinter.printRecord(computeGeneralData(bestOffers, requestedCards))
+            bestOffers.forEach { csvPrinter.printRecord(mapToRecord(it)) }
 
             csvPrinter.close()
         }
 
-    private fun computeGeneralData(cardEvaluations: List<CardEvaluation>, requestedCards: List<Card>): List<String?> {
-        val foundCards = cardEvaluations.filterIsInstance(FoundCardEvaluation::class.java)
+    private fun computeGeneralData(bestOffers: List<BestOffer>, requestedCards: List<Card>): List<String?> {
+        val foundCards = bestOffers.filterIsInstance(FoundBestOffer::class.java)
         val foundCardsAmount = foundCards.sumOf { it.amount }
         return listOf(
             DEFAULT_EMPTY,
@@ -73,15 +73,15 @@ class CardListController(
         )
     }
 
-    private fun mapToRecord(evaluation: CardEvaluation) = when (evaluation) {
-        is FoundCardEvaluation -> listOf(
+    private fun mapToRecord(evaluation: BestOffer) = when (evaluation) {
+        is FoundBestOffer -> listOf(
             evaluation.cardVersionName,
             evaluation.minPrice,
             evaluation.minPriceSeller,
             evaluation.amount
         )
 
-        is NotFoundCardEvaluation -> listOf(evaluation.cardVersionName, DEFAULT_UNKNOWN, DEFAULT_UNKNOWN, DEFAULT_EMPTY, evaluation.amount)
+        is NotFoundOffer -> listOf(evaluation.cardVersionName, DEFAULT_UNKNOWN, DEFAULT_UNKNOWN, DEFAULT_EMPTY, evaluation.amount)
     }
 
     companion object {
