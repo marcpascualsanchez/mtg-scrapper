@@ -37,6 +37,7 @@ dependencies {
 	implementation("org.apache.commons:commons-csv:1.8")
 	implementation("org.seleniumhq.selenium:selenium-java:4.11.0")
 	implementation("io.github.bonigarcia:webdrivermanager:5.5.2")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("com.github.tomakehurst:wiremock:$wiremock")

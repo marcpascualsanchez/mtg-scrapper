@@ -7,3 +7,7 @@ cardmarket:
   max_sleep_ms: 3000
   min_sleep_ms: 6000
   page_load_timeout: 500
+
+springdoc:
+  swagger-ui:
+    path: /api-docs
