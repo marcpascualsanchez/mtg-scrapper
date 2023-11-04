@@ -10,20 +10,30 @@ class CardmarketScrapperService(
 ) {
     fun getCardBySeller(seller: String, cardName: String): CardAtSale {
         val page = cardmarketWebDriver.searchCardBySeller(seller, cardName) ?: return CardNotFound
-        val price = scrapCheaperCardPrice(page) ?: return CardNotFound
+        val cheapestCard = scrapCheaperCard(page) ?: return CardNotFound
         return CardFound(
             seller,
-            price,
+            cheapestCard.price,
+            scrapCardAmount(page, cheapestCard.id)
         )
-        // TODO: what if we are flagged as robots and another page appears?
     }
 
-    private fun scrapCheaperCardPrice(htmlPage: Document): Double? {
-        return htmlPage
-            .body()
+    private fun scrapCheaperCard(htmlPage: Document): HtmlCard? {
+        val cheapestPrice = htmlPage.body()
             .select(PRICE_CSS_SELECTOR)
-            .minOfOrNull { parsePrice(it.text()) }
+            .minByOrNull { parsePrice(it.text()) }
+        return cheapestPrice?.run {
+            HtmlCard(
+                cheapestPrice.attr(CARD_ID_ATTRIBUTE).toInt(),
+                parsePrice(cheapestPrice.text())
+            )
+        }
     }
+
+    private fun scrapCardAmount(htmlPage: Document, id: Int): Int = htmlPage.body()
+        .select(AMOUNT_CSS_SELECTOR_TEMPLATE.format(id))
+        .text()
+        .toInt()
 
     private fun parsePrice(htmlText: String): Double {
         try {
@@ -39,5 +49,12 @@ class CardmarketScrapperService(
 
     companion object {
         const val PRICE_CSS_SELECTOR = ".mtg-scrapper-valid-price"
+        const val CARD_ID_ATTRIBUTE = "mtg-scrapper-id"
+        const val AMOUNT_CSS_SELECTOR_TEMPLATE = ".mtg-scrapper-valid-amount[$CARD_ID_ATTRIBUTE=\"%s\"]"
     }
 }
+
+data class HtmlCard(
+    val id: Int,
+    val price: Double,
+)

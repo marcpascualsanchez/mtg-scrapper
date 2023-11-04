@@ -7,6 +7,7 @@ data class FoundCardEvaluation(
     override val cardVersionName: String,
     val minPrice: Double,
     val minPriceSeller: String,
+    val amount: Int,
     // TODO: foils
 ): CardEvaluation(cardVersionName)
 

@@ -19,7 +19,7 @@ class CardmarketWebDriver(
     fun searchCardBySeller(seller: String, cardName: String): Document? {
         return try {
             chromeDriver.get(buildUrl(seller, cardName))
-            flagValidPricesElements(cardName)
+            flagMatchingCardElements(cardName)
             Thread.sleep(randomSleep())
             Jsoup.parse(chromeDriver.pageSource)
         } catch (e: Exception) {
@@ -29,7 +29,7 @@ class CardmarketWebDriver(
         }
     }
 
-    private fun flagValidPricesElements(cardName: String) {
+    private fun flagMatchingCardElements(cardName: String) {
         // put it somewhere else so this injected feature is understood
         val scriptExecution = "flagValidPrices('$cardName')"
         chromeDriver.executeScript("$flagValidPriceScriptDeclaration $scriptExecution")

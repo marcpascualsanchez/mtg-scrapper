@@ -71,7 +71,13 @@ class CardListController(
     }
 
     private fun mapToRecord(evaluation: CardEvaluation) = when (evaluation) {
-        is FoundCardEvaluation -> listOf(evaluation.cardVersionName, evaluation.minPrice, evaluation.minPriceSeller)
+        is FoundCardEvaluation -> listOf(
+            evaluation.cardVersionName,
+            evaluation.minPrice,
+            evaluation.minPriceSeller,
+            evaluation.amount
+        )
+
         is NotFoundCardEvaluation -> listOf(evaluation.cardVersionName, DEFAULT_EMPTY_LINE, DEFAULT_EMPTY_LINE)
     }
 

@@ -14,18 +14,37 @@ class CardListEvaluatorService(
     private val cardmarketScrapperService: CardmarketScrapperService,
 ) {
     fun evaluate(cardList: List<Card>, sellers: List<String>): List<CardEvaluation> {
-        return cardList.map { card ->
-            val cardsAtSale = fetchCardsBySeller(sellers, card)
-            val bestOffer = cardsAtSale.minByOrNull { it.price }
-            if (bestOffer == null) {
-                NotFoundCardEvaluation(card.name)
-            } else {
+        return cardList.flatMap { card ->
+            bestOffersCombination(fetchCardsBySeller(sellers, card), card)
+        }
+    }
+
+    private fun bestOffersCombination(
+        cardsAtSale: List<CardFound>,
+        card: Card
+    ): List<CardEvaluation> {
+        val bestOffer = cardsAtSale.minByOrNull { it.price }
+        return if (bestOffer == null) {
+            listOf(NotFoundCardEvaluation(card.name))
+        } else {
+            val isEnoughAmount = card.amount < bestOffer.amount
+            val res = mutableListOf<CardEvaluation>(
                 FoundCardEvaluation(
                     minPrice = bestOffer.price,
                     minPriceSeller = bestOffer.seller,
-                    cardVersionName = card.name, // TODO: get the scrapped name, not the searched name
+                    cardVersionName = card.name,
+                    amount = if(isEnoughAmount) card.amount else bestOffer.amount,
+                )
+            )
+            if (!isEnoughAmount) {
+                res.addAll(
+                    bestOffersCombination(
+                        cardsAtSale.filterNot { it.seller == bestOffer.seller },
+                        card.copy(amount = card.amount - bestOffer.amount)
+                    )
                 )
             }
+            res
         }
     }
 

@@ -36,9 +36,12 @@ Feature: API POST evaluates card list by seller
     When a POST is requested with body "artSeriesOnlyRequest.json"
     Then the response is a csv matching "artSeriesOnly.csv"
 
-    # could we also add the option for add-to-cart?
-  # works with name containing colon (NTH)
-  # foils
-  # accept cookies at initialization?
-  # handle selenium close
-  # when running all tests at once -> first closes the chrome driver, after that all fail
+    # combine sellers when not enough cards in one
+    # add list of not found cards
+    # openapi
+    # could we also add the option for add-to-cart? -> sign in with credentials + add-to-cart click
+    # works with name containing colon (NTH)
+    # foils
+    # accept cookies at initialization?
+    # handle selenium close
+    # fix for test: when running all tests at once -> first closes the chrome driver, after that all fail
