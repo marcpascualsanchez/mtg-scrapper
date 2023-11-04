@@ -64,9 +64,9 @@ class CardListController(
         val foundCards = cardEvaluations.filterIsInstance(FoundCardEvaluation::class.java)
         val foundCardsAmount = foundCards.sumOf { it.amount }
         return listOf(
-            null,
-            null,
-            null,
+            DEFAULT_EMPTY,
+            DEFAULT_EMPTY,
+            DEFAULT_EMPTY,
             foundCardsAmount.toString(),
             (requestedCards.sumOf { it.amount } - foundCardsAmount).toString(),
             "%.2f".format(foundCards.sumOf { it.minPrice * it.amount })
@@ -81,7 +81,7 @@ class CardListController(
             evaluation.amount
         )
 
-        is NotFoundCardEvaluation -> listOf(evaluation.cardVersionName, DEFAULT_EMPTY_LINE, DEFAULT_EMPTY_LINE)
+        is NotFoundCardEvaluation -> listOf(evaluation.cardVersionName, DEFAULT_UNKNOWN, DEFAULT_UNKNOWN, DEFAULT_EMPTY, evaluation.amount)
     }
 
     companion object {
@@ -94,7 +94,8 @@ class CardListController(
                 "not found cards",
                 "list total price"
             ).toTypedArray()
-        const val DEFAULT_EMPTY_LINE = "N/A"
+        const val DEFAULT_UNKNOWN = "N/A"
+        val DEFAULT_EMPTY = null
     }
 
 }

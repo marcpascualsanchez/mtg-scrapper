@@ -17,8 +17,18 @@ Feature: API POST evaluates card list by seller
       | Bloodthirsty Blade    | inGenio        | notFoundCard.html                   |
       | Pendant of Prosperity | MagicBarcelona | cheapPendantOfProsperity.html       |
       | Pendant of Prosperity | inGenio        | expensivePendantOfProsperity.html   |
-    When a POST is requested with body "tooMuchAmountRequest.json"
+    When a POST is requested with body "exactAmountFromMultipleSellersRequest.json"
     Then the response is a csv matching "allFoundCardsFromMultipleSellers.csv"
+
+  Scenario: cards are found in multiple sellers but are less than amount requested and a CSV is returned
+    Given cardmarket website responses are
+      | cardName              | seller         | response                            |
+      | Bloodthirsty Blade    | MagicBarcelona | cheapBloodthirstyBladeResponse.html |
+      | Bloodthirsty Blade    | inGenio        | notFoundCard.html                   |
+      | Pendant of Prosperity | MagicBarcelona | cheapPendantOfProsperity.html       |
+      | Pendant of Prosperity | inGenio        | expensivePendantOfProsperity.html   |
+    When a POST is requested with body "tooMuchAmountFromMultipleSellersRequest.json"
+    Then the response is a csv matching "partiallyFoundCardsFromMultipleSellers.csv"
 
   Scenario: cards are not found and a CSV is returned
     Given cardmarket website responses are
@@ -46,8 +56,6 @@ Feature: API POST evaluates card list by seller
     When a POST is requested with body "artSeriesOnlyRequest.json"
     Then the response is a csv matching "artSeriesOnly.csv"
 
-    # combine sellers when not enough cards in one
-    # add list of not found cards
     # openapi
     # could we also add the option for add-to-cart? -> sign in with credentials + add-to-cart click
     # works with name containing colon (NTH)
