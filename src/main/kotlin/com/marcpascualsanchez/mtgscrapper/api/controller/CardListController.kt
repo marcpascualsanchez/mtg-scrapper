@@ -26,10 +26,12 @@ class CardListController(
     fun evaluate(
         @Valid @RequestBody request: CardsListEvaluationRequest,
     ): StreamingResponseBody {
+        val requestedCards = parseCardList(request.rawList)
         return mapToResponse(
             cardListEvaluator.evaluate(
-                parseCardList(request.rawList), request.sellers
-            )
+                requestedCards, request.sellers
+            ),
+            requestedCards
         )
     }
 
@@ -42,7 +44,7 @@ class CardListController(
                 Card(amount = parts[0].toIntOrNull() ?: 0, name = parts[1].trim())
             }
 
-    private fun mapToResponse(cardEvaluations: List<CardEvaluation>) =
+    private fun mapToResponse(cardEvaluations: List<CardEvaluation>, requestedCards: List<Card>) =
         StreamingResponseBody { outputStream ->
             val csvPrinter =
                 CSVPrinter(
@@ -52,21 +54,22 @@ class CardListController(
                         .withRecordSeparator("\n")
                 )
 
-            csvPrinter.printRecord(computeGeneralData(cardEvaluations))
+            csvPrinter.printRecord(computeGeneralData(cardEvaluations, requestedCards))
             cardEvaluations.forEach { csvPrinter.printRecord(mapToRecord(it)) }
 
             csvPrinter.close()
         }
 
-    private fun computeGeneralData(cardEvaluations: List<CardEvaluation>): List<String?> {
+    private fun computeGeneralData(cardEvaluations: List<CardEvaluation>, requestedCards: List<Card>): List<String?> {
         val foundCards = cardEvaluations.filterIsInstance(FoundCardEvaluation::class.java)
+        val foundCardsAmount = foundCards.sumOf { it.amount }
         return listOf(
             null,
             null,
             null,
-            foundCards.size.toString(),
-            (cardEvaluations.size - foundCards.size).toString(),
-            foundCards.sumOf { it.minPrice }.toString()
+            foundCardsAmount.toString(),
+            (requestedCards.sumOf { it.amount } - foundCardsAmount).toString(),
+            "%.2f".format(foundCards.sumOf { it.minPrice * it.amount })
         )
     }
 

@@ -10,6 +10,16 @@ Feature: API POST evaluates card list by seller
     When a POST is requested with body "baseRequest.json"
     Then the response is a csv matching "allFoundCards.csv"
 
+  Scenario: cards are found in multiple sellers to cover the exactly amount requested and a CSV is returned
+    Given cardmarket website responses are
+      | cardName              | seller         | response                            |
+      | Bloodthirsty Blade    | MagicBarcelona | cheapBloodthirstyBladeResponse.html |
+      | Bloodthirsty Blade    | inGenio        | notFoundCard.html                   |
+      | Pendant of Prosperity | MagicBarcelona | cheapPendantOfProsperity.html       |
+      | Pendant of Prosperity | inGenio        | expensivePendantOfProsperity.html   |
+    When a POST is requested with body "tooMuchAmountRequest.json"
+    Then the response is a csv matching "allFoundCardsFromMultipleSellers.csv"
+
   Scenario: cards are not found and a CSV is returned
     Given cardmarket website responses are
       | cardName              | seller         | response          |

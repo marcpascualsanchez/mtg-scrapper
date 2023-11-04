@@ -27,7 +27,7 @@ class CardListEvaluatorService(
         return if (bestOffer == null) {
             listOf(NotFoundCardEvaluation(card.name))
         } else {
-            val isEnoughAmount = card.amount < bestOffer.amount
+            val isEnoughAmount = card.amount <= bestOffer.amount
             val res = mutableListOf<CardEvaluation>(
                 FoundCardEvaluation(
                     minPrice = bestOffer.price,
