@@ -1,8 +1,8 @@
 package com.marcpascualsanchez.mtgscrapper.api.controller
 
 import com.marcpascualsanchez.mtgscrapper.api.request.CardsListEvaluationRequest
-import com.marcpascualsanchez.mtgscrapper.domain.entity.Card
 import com.marcpascualsanchez.mtgscrapper.domain.entity.BestOffer
+import com.marcpascualsanchez.mtgscrapper.domain.entity.Card
 import com.marcpascualsanchez.mtgscrapper.domain.entity.FoundBestOffer
 import com.marcpascualsanchez.mtgscrapper.domain.entity.NotFoundOffer
 import com.marcpascualsanchez.mtgscrapper.domain.service.CardListEvaluatorService
@@ -19,7 +19,7 @@ import java.io.OutputStreamWriter
 @RestController
 @RequestMapping("/api/v1/cards-list")
 class CardListController(
-    private val cardListEvaluator: CardListEvaluatorService
+    private val cardListEvaluator: CardListEvaluatorService,
 ) {
 
     @PostMapping("/best-offers")
@@ -81,7 +81,13 @@ class CardListController(
             evaluation.amount
         )
 
-        is NotFoundOffer -> listOf(evaluation.cardVersionName, DEFAULT_UNKNOWN, DEFAULT_UNKNOWN, DEFAULT_EMPTY, evaluation.amount)
+        is NotFoundOffer -> listOf(
+            evaluation.cardVersionName,
+            DEFAULT_UNKNOWN,
+            DEFAULT_UNKNOWN,
+            DEFAULT_EMPTY,
+            evaluation.amount
+        )
     }
 
     companion object {

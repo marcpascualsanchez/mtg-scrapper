@@ -37,7 +37,7 @@ class CardmarketWebDriver(
     private fun buildUrl(seller: String, cardName: String) =
         "$url/Users/$seller/Offers/Singles?name=${URLEncoder.encode(cardName, "UTF-8")}&sortBy=price_asc"
 
-    private fun randomSleep() = (maxSleepTime..minSleepTime).random()
+    private fun randomSleep() = (minSleepTime..maxSleepTime).random()
 
     companion object {
         const val JS_FLAG_VALID_PRICES_FILE = "/js/flagValidPrices.js"
