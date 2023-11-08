@@ -1,1 +1,1 @@
-rootProject.name = "mtg-scrapper"
+rootProject.name = "kotlin-spring-boilerplate"

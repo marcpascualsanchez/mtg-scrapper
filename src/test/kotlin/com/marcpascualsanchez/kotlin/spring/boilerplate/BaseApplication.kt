@@ -1,12 +1,10 @@
-package com.marcpascualsanchez.mtgscrapper
+package com.marcpascualsanchez.kotlin.spring.boilerplate
 
-import io.cucumber.spring.CucumberContextConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 
-@CucumberContextConfiguration
-@SpringBootTest(classes = [MtgScrapperApplication::class])
+@SpringBootTest(classes = [KotlinSpringBoilerplateApplication::class])
 @ActiveProfiles("test")
 @ContextConfiguration()
 abstract class BaseApplication

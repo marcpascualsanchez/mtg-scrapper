@@ -1,11 +1,11 @@
-package com.marcpascualsanchez.mtgscrapper
+package com.marcpascualsanchez.kotlin.spring.boilerplate
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class MtgScrapperApplication
+class KotlinSpringBoilerplateApplication
 
 fun main(args: Array<String>) {
-	runApplication<MtgScrapperApplication>(*args)
+    runApplication<KotlinSpringBoilerplateApplication>(*args)
 }
